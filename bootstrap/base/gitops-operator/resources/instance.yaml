@@ -1,0 +1,96 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  finalizers:
+  - argoproj.io/finalizer
+  name: openshift-gitops
+  namespace: openshift-gitops
+spec:
+  applicationInstanceLabelKey: argocd.argoproj.io/instance
+  controller:
+    logLevel: info
+    processors: {}
+    sharding: {}
+  grafana:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  ha:
+    enabled: false
+  initialSSHKnownHosts:
+    excludedefaulthosts: false
+    keys: |
+      code.example.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCf+sAiGaYSq035KqPHxXvknFbyafPiGXTaHIDZkSKPsQBH5gjbioKW4f7CfXQNWaUCbT4qZXG00al0zjb5sU2+kx16pExZucw2M110fUa2JKmrf+ZtbaCwSk5WOOrSK+3REVgI+FT0xg/lYUzsb0TtHIPZlN3OgclZKVHbrSZH/78XsR11c7DLhLMkaOFA4k6a1iJfWNO1XjddTkUHdZjG47vFXupPQakCzcVVadX3NcofvoFQ7JPOL8HMO2PdqIneljBiLRYChUQIvifogKieF8mfPjpQ0Lqz5FsHviM1oxmRD+o7JOLipWGjqUgK/V 
+      code.example.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlHAyNTYAAABBBPLbeoCC3815MjgW3lXZfpTXo5bJA2YK4kxj+gmgWBoKhVopxZ4dKPDG4j+k/irvJyvNuuEtZfSSUrcphoNp8bM=
+  kustomizeBuildOptions: --enable-alpha-plugins --enable-helm
+  monitoring:
+    enabled: false
+  notifications:
+    enabled: false
+  prometheus:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  rbac:
+    policy: patch_me 
+    scopes: '[groups]'
+  redis: {}
+  repo:
+    env:
+    - name: KUSTOMIZE_PLUGIN_HOME
+      value: /etc/kustomize/plugin
+    initContainers:
+    - args:
+      - -c
+      - cp /etc/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator/PolicyGenerator
+        /policy-generator/PolicyGenerator
+      command:
+      - /bin/bash
+      image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel8:v2.8.0
+      name: policy-generator-install
+      volumeMounts:
+      - mountPath: /policy-generator
+        name: policy-generator
+    logLevel: debug
+    volumeMounts:
+    - mountPath: /etc/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator
+      name: policy-generator
+    volumes:
+    - emptyDir: {}
+      name: policy-generator
+  resourceExclusions: |
+    - apiGroups:
+      - tekton.dev
+      clusters:
+      - '*'
+      kinds:
+      - PipelineRun
+  server:
+    autoscale:
+      enabled: false
+    grpc:
+      ingress:
+        enabled: false
+    ingress:
+      enabled: false
+    insecure: true
+    logLevel: info
+    route:
+      enabled: true
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+    service:
+      type: ""
+  sso:
+    dex:
+      openShiftOAuth: true
+    provider: dex
+  tls:
+    ca: {}
+
