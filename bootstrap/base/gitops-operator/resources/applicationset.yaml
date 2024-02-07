@@ -18,12 +18,15 @@ spec:
     spec:
       project: "default"
       source:
-        repoURL: https://github.com/argoproj/argo-cd.git
+        repoURL: https://github.com/vishnoisuresh/ocp-configs.git
         targetRevision: HEAD
         path: '{{.path.path}}'
       destination:
         server: https://kubernetes.default.svc
         namespace: openshift-gitops
       syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
         - CreateNamespace=true
